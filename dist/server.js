@@ -12,7 +12,7 @@ app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
 const corsOptions = {
-    origin: "http://127.0.0.1:5173",
+    origin: "http://shopping-zone-frontend.s3-website-ap-southeast-1.amazonaws.com",
     credentials: true,
 };
 app.use(cors(corsOptions));

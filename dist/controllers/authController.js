@@ -34,7 +34,7 @@ const registerController = (req, res) => __awaiter(void 0, void 0, void 0, funct
         // check duplicate user
         const oldUser = yield user_1.default.findOne({ telephone_no });
         if (oldUser) {
-            return res.status(409).json({ status: 409, message: "หมายเลขโทรศัพท์นี้ถูกลงทะเบียนไปแล้วกรุณาใช้หลายเลขอื่น" });
+            return res.status(409).json({ status: 409, message: "หมายเลขโทรศัพท์นี้ถูกลงทะเบียนไปแล้วกรุณาใช้หมายเลขอื่น" });
         }
         //Encrypt user password
         let encryptedPassword = yield bcryptjs_1.default.hash(password, 10);
