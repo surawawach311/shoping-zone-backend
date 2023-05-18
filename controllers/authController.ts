@@ -39,7 +39,7 @@ const registerController = async (req: Request, res: Response) => {
     const oldUser = await User.findOne({ telephone_no });
 
     if (oldUser) {
-      return res.status(409).json({ status: 409, message: "หมายเลขโทรศัพท์นี้ถูกลงทะเบียนไปแล้วกรุณาใช้หลายเลขอื่น" });
+      return res.status(409).json({ status: 409, message: "หมายเลขโทรศัพท์นี้ถูกลงทะเบียนไปแล้วกรุณาใช้หมายเลขอื่น" });
     }
 
     //Encrypt user password

@@ -6,16 +6,11 @@ export interface AuthenticatedRequest extends Request {
   user: any;
 }
 
-const verifyToken = (
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  const token =
-    req.body.token || req.query.token || req.headers["x-access-token"];
+const verifyToken = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  const token = req.body.token || req.query.token || req.headers["x-access-token"];
 
   if (!token) {
-    return res.status(403).json("A token is require for authentication");
+    return res.status(403).json({ status: 403, message: "A token is require for authentication" });
   }
 
   try {
