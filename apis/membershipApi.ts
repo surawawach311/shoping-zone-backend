@@ -5,10 +5,11 @@ const upload = multer({ dest: "uploads" });
 const auth = require("../middleware/auth");
 const router = express.Router();
 
-const { getMemberShip, createMemberShip, uploadSlip } = require("../controllers/membershipController");
+const { getMemberShip, getAllMemberShip, uploadSlip, approvePremium } = require("../controllers/membershipController");
 
 router.get("/membership", auth, getMemberShip);
-router.post("/membership", auth, createMemberShip);
+router.get("/allMembership", auth, getAllMemberShip);
 router.post("/upload", [auth, upload.single("image")], uploadSlip);
+router.post("/approvePremium", auth, approvePremium);
 
 module.exports = router;

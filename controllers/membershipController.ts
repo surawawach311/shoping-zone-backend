@@ -1,25 +1,53 @@
 import { Request, Response, NextFunction } from "express";
 import MemberShip from "../model/membership";
 import { uploadFile } from "../config/uploadToS3";
-import { log } from "console";
 import FileUpload from "../model/fileUpload";
-import { Location } from "aws-sdk";
 
 // import User from "../model/user";
 
 const getMemberShip = async (req: Request, res: Response) => {
   try {
-    const { telephone_no } = req.body;
-    const premium = await MemberShip.findOne({ telephone_no });
-    return res.status(200).json({ message: "verified successfully", is_premium: premium ? true : false });
+    const { telephone_no } = req.query;
+
+    const premium = await MemberShip.find({ telephone_no: telephone_no });
+    if (premium) {
+      return res.status(200).json({ message: "verified successfully", data: premium });
+    } else {
+      return res.status(200).json({ message: "data not found", data: premium });
+    }
   } catch (error) {
     return res.status(500).json({ status: 500, message: error });
   }
 };
-const createMemberShip = async (req: Request, res: Response) => {
+
+const getAllMemberShip = async (req: Request, res: Response) => {
   try {
-    if (!req.body.telephone_no) {
-      return res.status(400).json({ status: 400, message: "กรุณากรอกข้อมูลให้ครบถ้วน" });
+    const { status } = req.query;
+    if (status) {
+      const membership = await MemberShip.find({ status: status });
+      return res.status(200).json({ message: "get with " + status + "complete", data: membership });
+    } else {
+      const membership = await MemberShip.find();
+      return res.status(200).json({ message: "get complete", data: membership });
+    }
+  } catch (error) {
+    return res.status(500).json({ status: 500, message: error });
+  }
+};
+
+const approvePremium = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.body;
+    const member = await MemberShip.findByIdAndUpdate(id, {
+      status: "success",
+      effective_date: new Date(),
+      expire_date: new Date().setDate(new Date().getDate() + 30),
+      approve_date: new Date(),
+    });
+    if (member) {
+      return res.status(200).json({ message: "approved", data: member });
+    } else {
+      return res.status(200).json({ message: "not found id", data: member });
     }
   } catch (error) {
     return res.status(500).json({ status: 500, message: error });
@@ -28,60 +56,40 @@ const createMemberShip = async (req: Request, res: Response) => {
 
 const uploadSlip = async (req: any, res: Response) => {
   try {
-    const { telephone_no, upload_type } = req.body;
+    const { telephone_no, date, time, from_bank_account_no, from_bank_account_name } = req.body;
 
-    if (!(telephone_no && upload_type && req.file)) {
+    if (!(telephone_no && from_bank_account_no && from_bank_account_name)) {
       return res.status(400).json({ status: 400, message: "กรุณากรอกข้อมูลให้ครบถ้วน" });
     }
-    // const path = `https://shoppingzone-uploadfile.s3.ap-southeast-1.amazonaws.com/${Date.now()}${
-    //   req.file.originalname
-    // }`;
+    if (!req.file) {
+      return res.status(400).json({ status: 400, message: "no file" });
+    }
+
     await uploadFile(req.file).then((rs: any) => {
-      // console.log(path);
       const uploaded = {
         telephone_no: telephone_no,
         image_url: rs.data.Location,
-        upload_datime: Date.now(),
-        upload_type: upload_type,
+        from_bank_account: from_bank_account_no,
+        from_bank_account_name: from_bank_account_name,
+        paid_date: new Date(date),
+        paid_time: time,
       };
+      const member = {
+        telephone_no: telephone_no,
+        paid_date: new Date(date),
+        paid_time: time,
+        from_bank_account: from_bank_account_no,
+        from_bank_account_name: from_bank_account_name,
+        upload: uploaded,
+      };
+      MemberShip.create(member).catch((error) => console.log(error));
       FileUpload.create(uploaded).then((result) => {
         return res.status(201).json({ status: 201, message: "upload success", data: result });
       });
     });
-
-    // const savedFile = await fileUpload.save();
-    // res.status(201).json({
-    //   status: 201,
-    //   message: "Upload success",
-    // data: savedFile,
-    // });
-    // await uploadFile(req.file).then((rs: any) => rs.data.Location);
-    // await FileUpload.create({
-    //   telephone_no,
-    //   path,
-    //   upload_type,
-    // }).then((result) => {
-    //   return res.status(201).json({ status: 201, message: "upload success", data: result });
-    // });
-
-    //   await uploadFile(req.file)
-    //     .then(async (res: any) => {
-    //       let path = await res.data.Location;
-    //       let curDate = new Date();
-    //       const upload = await FileUpload.create({
-    //         telephone_no,
-    //         path,
-    //         curDate,
-    //         upload_type,
-    //       });
-    //       console.log(upload);
-    //     })
-    //     .then((result) => {
-    //       return res.status(201).json({ status: 201, message: "upload success" });
-    //     });
   } catch (error) {
     return res.status(500).json({ status: 500, message: error });
   }
 };
 
-module.exports = { getMemberShip, createMemberShip, uploadSlip };
+module.exports = { getMemberShip, uploadSlip, getAllMemberShip, approvePremium };
