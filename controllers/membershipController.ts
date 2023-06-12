@@ -65,7 +65,7 @@ const uploadSlip = async (req: any, res: Response) => {
       return res.status(400).json({ status: 400, message: "no file" });
     }
 
-    await uploadFile(req.file).then((rs: any) => {
+    await uploadFile(req.file, "premium").then((rs: any) => {
       const uploaded = {
         telephone_no: telephone_no,
         image_url: rs.data.Location,

@@ -5,7 +5,7 @@ const s3 = new AWS.S3({
   secretAccessKey: "cU08q4tEK0c4COEa3W/rTvGw4QWzzXhYopYYEBuA",
   region: "ap-southeast-1",
 });
-export const uploadFile = (file: any) => {
+export const uploadFile = (file: any, path: string) => {
   let allowMimeType = ["image/jpeg", "image/png", "application/pdf"];
   let allowFileSize = 5242880;
 
@@ -22,7 +22,7 @@ export const uploadFile = (file: any) => {
         fs.readFile(file.path, async function (err: any, data: any) {
           if (err) throw err;
           const params = {
-            Bucket: `shoppingzone-uploadfile`,
+            Bucket: `shoppingzone-uploadfile/${path}`,
             Key: `${Date.now()}${file.originalname}`,
             Body: data,
           };
